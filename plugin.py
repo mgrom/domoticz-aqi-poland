@@ -113,7 +113,7 @@ class BasePlugin:
             nValue=int(round(aqi.pm10.get("value")))
         )
         Devices[self.PM25].Update(
-            sValue=str(aqi.pm25.get("date"))
+            sValue=str(aqi.pm25.get("date")),
             nValue=int(round(aqi.pm25.get("value")))
         )
 
