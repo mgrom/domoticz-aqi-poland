@@ -31,7 +31,7 @@ import json
 
 class AqiStatus:
 
-    def getValue(param):
+    def getValue(self, param):
         url = "http://api.gios.gov.pl/pjp-api/rest/data/getData/" + param
         response = requests.get(url)
 
