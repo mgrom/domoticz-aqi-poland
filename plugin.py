@@ -69,6 +69,8 @@ class BasePlugin:
             Domoticz.Device(Name="External PM 2.5", Unit=self.PM25, TypeName="PM 2.5", Used=1).Create()
             Domoticz.Device(Name="External PM 10", Unit=self.PM10, TypeName="PM 10", Used=1).Create()
 
+        self.onHeartbeat(fetch=False)
+
     def onStop(self):
         Domoticz.Debug('onStop called')
         Domoticz.Debugging(0)
@@ -78,6 +80,7 @@ class BasePlugin:
 
         if not fetch:
             if self.inProgress or (now > self.nextpoll):
+                Domoticz.Debug('skip processing')
                 return
         
         self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=self.pollinterval))
