@@ -67,7 +67,7 @@ class BasePlugin:
 
         if len(Devices) == 0:
             Domoticz.Device(Name="External PM 2.5", Unit=self.PM25, TypeName="PM 2.5", Used=1).Create()
-            Domoticz.Device(Name="External PM 10", Unit=self.PM25, TypeName="PM 10", Used=1).Create()
+            Domoticz.Device(Name="External PM 10", Unit=self.PM10, TypeName="PM 10", Used=1).Create()
 
     def onStop(self):
         Domoticz.Debug('onStop called')
