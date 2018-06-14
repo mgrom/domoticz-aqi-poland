@@ -6,10 +6,10 @@
 """
 <plugin key="AQIgovpl" name="AQI.gov.pl" author="mgrom" version="0.1" wikilink="http://api.gios.gov.pl" externallink="https://github.com/mgrom/Aqi.gov.pl">
     <params>
-		<param field="pm25" label="PM2.5 Sensor" width="200px" required="true" default="0"/>
-		<param field="pm10" label="PM10 Sensor" default="0" width="200px" required="true"  />
-        <param field="checkFreq" label="Check every x minutes" width="40px" default="15" required="true" />
-		<param field="debug" label="Debug" width="75px">
+		<param field="Mode1" label="PM2.5 Sensor" width="200px" required="true" default="0"/>
+		<param field="Mode2" label="PM10 Sensor" default="0" width="200px" required="true"  />
+        <param field="Mode3" label="Check every x minutes" width="40px" default="15" required="true" />
+		<param field="Mode6" label="Debug" width="75px">
 			<options>
 				<option label="True" value="Debug"/>
 				<option label="False" value="Normal" default="true" />
@@ -56,13 +56,14 @@ class BasePlugin:
         self.PM10 = 20
 
     def onStart(self):
-        if Parameters["debug"] == 'Debug':
+        Domoticz.Debug()
+        if Parameters["Mode6"] == 'Debug':
             self.debug = True
         else:
             self.debug = False
         Domoticz.Debugging(self.debug)
 
-        self.pollinterval = int(Parameters["checkFreq"]) * 60
+        self.pollinterval = int(Parameters["Mode3"]) * 60
 
         if len(Devices) == 0:
             Domoticz.Device(Name="External PM 2.5", unit=self.PM25, TypeName="Air Quality", Used=1).Create()
@@ -93,7 +94,7 @@ class BasePlugin:
         return True
 
     def doUpdate(self):
-        aqi = AqiStatus(Parameters["pm25"], Parameters["pm10"])
+        aqi = AqiStatus(Parameters["Mode1"], Parameters["Mode2"])
 
         Devices[self.PM10].Update(nValue=aqi.pm10)
         Devices[self.PM25].Update(nValue=aqi.pm25)
