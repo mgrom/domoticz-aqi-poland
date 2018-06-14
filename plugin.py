@@ -55,6 +55,13 @@ class BasePlugin:
         self.PM25 = 10
         self.PM10 = 20
 
+        return
+
+    def postponeNextPool(self, seconds=3600):
+        self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=seconds))
+        return self.nextpoll
+
+
     def onStart(self):
         Domoticz.Debug()
         if Parameters["Mode6"] == 'Debug':
@@ -83,7 +90,7 @@ class BasePlugin:
                 Domoticz.Debug('skip processing')
                 return
         
-        self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=self.pollinterval))
+        self.postponeNextPool(seconds=self.pollinterval)
 
         try:
             Domoticz.Debug("onHeartbeat in progress")
