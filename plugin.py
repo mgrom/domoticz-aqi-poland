@@ -106,7 +106,7 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = AqiStatus(Parameters["Mode1"], Parameters["Mode2"])
-        Domoticz.Debug("PM2.5: " + str(aqi.pm25.value))
+        Domoticz.Debug("AQI: " + str(aqi))
 
         Devices[self.PM10].Update(sValue=aqi.pm10.value)
         Devices[self.PM25].Update(sValue=aqi.pm25.value)
