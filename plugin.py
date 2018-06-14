@@ -83,6 +83,7 @@ class BasePlugin:
         self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=self.pollinterval))
 
         try:
+            Domoticz.Debug("onHeartbeat in progress")
             self.inProgress = True
 
             self.doUpdate()
@@ -95,6 +96,7 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = AqiStatus(Parameters["Mode1"], Parameters["Mode2"])
+        Domoticz.Debug("PM2.5: " + aqi.pm25)
 
         Devices[self.PM10].Update(nValue=aqi.pm10)
         Devices[self.PM25].Update(nValue=aqi.pm25)
