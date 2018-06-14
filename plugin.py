@@ -66,8 +66,8 @@ class BasePlugin:
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
         if len(Devices) == 0:
-            Domoticz.Device(Name="External PM 2.5", unit=self.PM25, TypeName="Air Quality", Used=1).Create()
-            Domoticz.Device(Name="External PM 10",  unit=self.PM10, TypeName="Air Quality", Used=1).Create()
+            Domoticz.Device(Name="External PM 2.5", Unit=self.PM25, TypeName="PM 2.5", nValue=0, sValue=0, Used=1).Create()
+            Domoticz.Device(Name="External PM 10", Unit=self.PM25, TypeName="PM 10", nValue=0, sValue=0, Used=1).Create()
 
     def onStop(self):
         Domoticz.Debug('onStop called')
