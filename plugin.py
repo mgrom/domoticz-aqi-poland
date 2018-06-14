@@ -106,10 +106,16 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = AqiStatus(Parameters["Mode1"], Parameters["Mode2"])
-        Domoticz.Debug("AQI: " + str(aqi.pm25["value"]))
+        Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
 
-        Devices[self.PM10].Update(sValue=str(aqi.pm10.get("value")))
-        Devices[self.PM25].Update(sValue=str(aqi.pm25.get("value")))
+        Devices[self.PM10].Update(
+            sValue=str(aqi.pm10.get("date")),
+            nValue=int(round(aqi.pm10.get("value")))
+        )
+        Devices[self.PM25].Update(
+            sValue=str(aqi.pm25.get("date"))
+            nValue=int(round(aqi.pm25.get("value")))
+        )
 
 global _plugin
 _plugin = BasePlugin()
