@@ -86,7 +86,7 @@ class BasePlugin:
         now = datetime.datetime.now()
 
         if not fetch:
-            if self.inProgress or (now > self.nextpoll):
+            if self.inProgress or (now < self.nextpoll):
                 Domoticz.Debug('skip processing')
                 return
         
