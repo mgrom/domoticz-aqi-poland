@@ -150,12 +150,14 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = self.getAqiStatus()
+        Domoticz.Debug("doUpdate in progress")
         for key, value in aqi.sensors.items():
             Domoticz.Debug(str(key)+": "+str(value))
             Devices[str(value.get("unit"))].Update(
                 sValue=str(value.get("value")),
                 nValue=0
             )
+        Domoticz.Debug("doUpdate finished")
         return
 
 global _plugin
