@@ -100,7 +100,7 @@ class BasePlugin:
 
     def onStart(self):
         aqi = self.getAqiStatus()
-        # Domoticz.Debug(str(self.aqi.location))
+        Domoticz.Debug(str(aqi.location))
         if Parameters["Mode6"] == 'Debug':
             self.debug = True
         else:
