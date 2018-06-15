@@ -89,7 +89,7 @@ class BasePlugin:
         self.nextpoll = datetime.datetime.now()
         self.inProgress = False
 
-        self.aqi = AqiStatus()
+        # self.aqi = AqiStatus()
 
         return
 
@@ -99,6 +99,7 @@ class BasePlugin:
 
 
     def onStart(self):
+        aqi = self.getAqiStatus()
         # Domoticz.Debug(str(self.aqi.location))
         if Parameters["Mode6"] == 'Debug':
             self.debug = True
@@ -140,6 +141,9 @@ class BasePlugin:
             self.inProgress = False
         
         return True
+
+    def getAqiStatus():
+        return AqiStatus()
 
     def doUpdate(self):
         # for key, value in self.aqi.sensors.items():
