@@ -49,13 +49,6 @@ class AqiStatus:
             if status.get("value") != None:
                 return status
 
-    def __init__(self):
-        self.location = self.getLocation()
-        self.name = self.location.stationName
-        self.address = self.location.addressStreet
-        self.stationId = self.location.id
-        self.sensors = self.getSensors()
-
     def getSensors(self):
         Domoticz.Debug("getSensors")
         sensors = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/sensors/" + str(self.stationId))
@@ -81,6 +74,15 @@ class AqiStatus:
         stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
         return self.closest(stations, locationDict)
 
+    def __init__(self):
+        self.location = self.getLocation()
+        self.name = self.location.stationName
+        self.address = self.location.addressStreet
+        self.stationId = self.location.id
+        self.sensors = self.getSensors()
+
+
+
 class BasePlugin:   
 
     def __init__(self):
@@ -97,7 +99,7 @@ class BasePlugin:
 
 
     def onStart(self):
-        Domoticz.Debug(str(self.aqi.location))
+        # Domoticz.Debug(str(self.aqi.location))
         if Parameters["Mode6"] == 'Debug':
             self.debug = True
         else:
@@ -106,10 +108,10 @@ class BasePlugin:
 
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
-        if len(Devices) == 0:
-            for key, value in self.aqi.sensors.items():
-                Domoticz.Debug(key+": "+value)
-                Domoticz.Device(Name=self.aqi.name+" "+self.aqi.address+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
+        # if len(Devices) == 0:
+        #     for key, value in self.aqi.sensors.items():
+        #         Domoticz.Debug(key+": "+value)
+        #         Domoticz.Device(Name=self.aqi.name+" "+self.aqi.address+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -140,12 +142,12 @@ class BasePlugin:
         return True
 
     def doUpdate(self):
-        for key, value in self.aqi.sensors.items():
-            Devices[str(value.get("unit"))].Update(
-                sValue=str(value.get("value")),
-                nValue=0
-            )
-
+        # for key, value in self.aqi.sensors.items():
+        #     Devices[str(value.get("unit"))].Update(
+        #         sValue=str(value.get("value")),
+        #         nValue=0
+        #     )
+        return
 
 global _plugin
 _plugin = BasePlugin()
