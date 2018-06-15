@@ -6,8 +6,6 @@
 """
 <plugin key="AQIgovpl" name="AQI.gov.pl" author="mgrom" version="0.1" wikilink="http://api.gios.gov.pl" externallink="https://github.com/mgrom/Aqi.gov.pl">
     <params>
-		<param field="Mode1" label="PM2.5 Sensor" width="200px" required="true" default="0"/>
-		<param field="Mode2" label="PM10 Sensor" default="0" width="200px" required="true"  />
         <param field="Mode3" label="Check every x minutes" width="40px" default="15" required="true" />
 		<param field="Mode6" label="Debug" width="75px">
 			<options>
@@ -31,40 +29,47 @@ import json
 
 def distance(lat1, lon1, lat2, lon2):
     p = 0.017453292519943295
-    a = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
+    a = 0.5 - cos((float(lat2)-float(lat1))*p)/2 + cos(float(lat1)*p)*cos(float(lat2)*p) * (1-cos((float(lon2)-float(lon1))*p)) / 2
     return 12742 * asin(sqrt(a))
 
 def closest(data, v):
-    return min(data, key=lambda p: distance(v['gegrLat'],v['gegrLon'],p['gegrLat'],p['gegrLon']))
+    return min(data, key=lambda p: distance(v.get('gegrLat'),v.get('gegrLon'),p.get('gegrLat'),p.get('gegrLon')))
 
 
 class AqiStatus:
 
-    def getValue(self, param):
-        url = "http://api.gios.gov.pl/pjp-api/rest/data/getData/" + param
+    def getApiData(self, url):
         response = requests.get(url)
+        return response.json()
 
-        values = response.json().get("values")
+    def getValue(self, param):
+        # url = "http://api.gios.gov.pl/pjp-api/rest/data/getData/" + param
+        # response = requests.get(url)
+
+        values = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/data/getData/"+param).get("values")
 
         for status in values:
             if status.get("value") != None:
                 return status
 
-    def __init__(self, pm25Sensor, pm10Sensor):
-        self.pm25 = self.getValue(pm25Sensor)
-        self.pm10 = self.getValue(pm10Sensor)
-
-
-class BasePlugin:
-
     def __init__(self):
-        self.nextpoll = datetime.datetime.now()
-        self.inProgress = False
+        self.location = self.getLocation()
+        self.name = self.location.get("stationName")
+        self.address = self.location.get("addressStreet")
+        self.stationId = self.location.get("id")
+        self.sensors = self.getSensors()
 
-        self.PM25 = 10
-        self.PM10 = 20
-
-        return
+    def getSensors(self):
+        sensors = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/sensors/" + str(self.stationId))
+        retSensors = {}
+        for sensor in sensors:
+            retSensors[sensor.get("param").get("paramCode")] = {
+                "paramName": sensor.get("param").get("paramName"), 
+                "id": sensor.get("id"), 
+                "paramCode": sensor.get("param").get("paramCode"),
+                "value": self.getValue(str(sensor.get("id")))
+            }
+        return retSensors
 
 
     def getLocation(self):
@@ -73,13 +78,20 @@ class BasePlugin:
         locationDict["gegrLat"] = location[0]
         locationDict["gegrLon"] = location[1]
 
-        url = "http://api.gios.gov.pl/pjp-api/rest/station/findAll"
-        response = requests.get(url)
-        stations = response.json()
-        #lati 49-55
-        #long 14-24
-        return closest(locationDict, stations)
+        stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
+        return closest(stations, locationDict)
 
+class BasePlugin:   
+
+    def __init__(self):
+        self.nextpoll = datetime.datetime.now()
+        self.inProgress = False
+
+        self.aqi = AqiStatus()
+
+        self.variables = {}
+
+        return
 
     def postponeNextPool(self, seconds=3600):
         self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=seconds))
@@ -97,8 +109,10 @@ class BasePlugin:
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
         if len(Devices) == 0:
-            Domoticz.Device(Name="External PM 2.5", TypeName="Custom", Unit=self.PM25, Used=1, Image=7).Create()
-            Domoticz.Device(Name="External PM 10", TypeName="Custom", Unit=self.PM10, Used=1, Image=7).Create()
+            for key, value in self.aqi.sensors.items():
+                Domoticz.Device(Name=self.aqi.location+" "+key, TypeName="Custom", Unit=value.unit, Used=0, Image=7).Create()
+            # Domoticz.Device(Name="External PM 2.5", TypeName="Custom", Unit=self.PM25, Used=0, Image=7).Create()
+            # Domoticz.Device(Name="External PM 10", TypeName="Custom", Unit=self.PM10, Used=1, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -129,17 +143,23 @@ class BasePlugin:
         return True
 
     def doUpdate(self):
-        aqi = AqiStatus(Parameters["Mode1"], Parameters["Mode2"])
-        Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
+        aqi = AqiStatus()
+        # Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
 
-        Devices[self.PM10].Update(
-            sValue=str(aqi.pm10.get("value")),
-            nValue=0
-        )
-        Devices[self.PM25].Update(
-            sValue=str(aqi.pm25.get("value")),
-            nValue=0
-        )
+        for key, value in self.aqi.sensors.items():
+            Devices[value.unit].Update(
+                sValue=str(value.value),
+                nValue=0
+            )
+
+        # Devices[self.PM10].Update(
+        #     sValue=str(aqi.pm10.get("value")),
+        #     nValue=0
+        # )
+        # Devices[self.PM25].Update(
+        #     sValue=str(aqi.pm25.get("value")),
+        #     nValue=0
+        # )
 
 global _plugin
 _plugin = BasePlugin()
