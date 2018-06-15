@@ -110,7 +110,7 @@ class BasePlugin:
 
         if len(Devices) == 0:
             for key, value in self.aqi.sensors.items():
-                Domoticz.Device(Name=self.aqi.location+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
+                Domoticz.Device(Name=self.aqi.location.stationName+" "+self.aqi.location.addressStreet+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 

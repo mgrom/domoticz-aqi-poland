@@ -70,6 +70,15 @@ class AqiStatus:
         #lati 49-55
         #long 14-24
         return closest(stations, locationDict)
-    
-pprint.PrettyPrinter(indent=4).pprint(AqiStatus().sensors.keys())
-print(AqiStatus().sensors.keys())
+
+
+global aqi
+aqi = AqiStatus()
+
+pprint.PrettyPrinter(indent=4).pprint(aqi.location)
+
+for key, value in aqi.sensors.items():
+    print(str(value.get("unit")))
+    print(value.get("value"))
+    print(aqi.location.get("stationName")+" "+key)
+
