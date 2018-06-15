@@ -73,8 +73,8 @@ class BasePlugin:
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
         if len(Devices) == 0:
-            Domoticz.Device(Name="External PM 2.5", TypeName="General", SubType="Custom Sensor", Unit=self.PM25, Used=1).Create()
-            Domoticz.Device(Name="External PM 10", TypeName="General", SubType="Custom Sensor", Unit=self.PM10, Used=1).Create()
+            Domoticz.Device(Name="External PM 2.5", TypeName="General", Unit=self.PM25, Used=1).Create()
+            Domoticz.Device(Name="External PM 10", TypeName="General", Unit=self.PM10, Used=1).Create()
 
         self.onHeartbeat(fetch=False)
 
