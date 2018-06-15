@@ -53,12 +53,15 @@ class AqiStatus:
         Domoticz.Debug("getSensors")
         sensors = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/sensors/" + str(self.stationId))
         retSensors = {}
+        unit = 0
         for sensor in sensors:
+            unit = unit + 10
             retSensors[sensor.get("param").get("paramCode")] = {
                 "paramName": sensor.get("param").get("paramName"), 
                 "id": sensor.get("id"), 
                 "paramCode": sensor.get("param").get("paramCode"),
-                "value": self.getValue(str(sensor.get("id")))
+                "value": self.getValue(str(sensor.get("id"))),
+                "unit": unit
             }
         Domoticz.Debug("getSensors: "+str(retSensors))
         return retSensors
