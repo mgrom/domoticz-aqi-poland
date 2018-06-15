@@ -60,6 +60,7 @@ class AqiStatus:
         self.sensors = self.getSensors()
 
     def getSensors(self):
+        Domoticz.Debug("getSensors")
         sensors = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/sensors/" + str(self.stationId))
         retSensors = {}
         for sensor in sensors:
@@ -69,10 +70,12 @@ class AqiStatus:
                 "paramCode": sensor.get("param").get("paramCode"),
                 "value": self.getValue(str(sensor.get("id")))
             }
+        Domoticz.Debug("getSensors: "+str(retSensors))
         return retSensors
 
 
     def getLocation(self):
+        Domoticz.Debug('getLocation')
         location = str(Settings.get("Location")).split(";")
         locationDict = {}
         locationDict["gegrLat"] = location[0]
@@ -88,8 +91,6 @@ class BasePlugin:
         self.inProgress = False
 
         self.aqi = AqiStatus()
-
-        self.variables = {}
 
         return
 
@@ -110,7 +111,7 @@ class BasePlugin:
 
         if len(Devices) == 0:
             for key, value in self.aqi.sensors.items():
-                Domoticz.Device(Name=self.aqi.location+" "+key, TypeName="Custom", Unit=value.unit, Used=0, Image=7).Create()
+                Domoticz.Device(Name=self.aqi.location+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
             # Domoticz.Device(Name="External PM 2.5", TypeName="Custom", Unit=self.PM25, Used=0, Image=7).Create()
             # Domoticz.Device(Name="External PM 10", TypeName="Custom", Unit=self.PM10, Used=1, Image=7).Create()
 
@@ -143,12 +144,12 @@ class BasePlugin:
         return True
 
     def doUpdate(self):
-        aqi = AqiStatus()
+        # aqi = AqiStatus()
         # Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
 
         for key, value in self.aqi.sensors.items():
-            Devices[value.unit].Update(
-                sValue=str(value.value),
+            Devices[str(value.get("unit"))].Update(
+                sValue=str(value.get("value")),
                 nValue=0
             )
 
