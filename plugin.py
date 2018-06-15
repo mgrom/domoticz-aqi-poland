@@ -111,7 +111,7 @@ class BasePlugin:
 
         if len(Devices) == 0:
             for key, value in aqi.sensors.items():
-                Domoticz.Debug(key+": "+value)
+                Domoticz.Debug(str(key)+": "+str(value))
                 Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
@@ -148,6 +148,7 @@ class BasePlugin:
     def doUpdate(self):
         aqi = self.getAqiStatus()
         for key, value in aqi.sensors.items():
+            Domoticz.Debug(str(key)+": "+str(value))
             Devices[str(value.get("unit"))].Update(
                 sValue=str(value.get("value")),
                 nValue=0
