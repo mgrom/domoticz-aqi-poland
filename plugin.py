@@ -18,14 +18,15 @@
 """
 import Domoticz
 import sys
-import datetime
-from math import cos, asin, sqrt
+
 
 sys.path.append(sys.prefix+'/local/lib/python3.5/dist-packages')
 sys.path.append(sys.prefix+'/local/lib/python3/dist-packages')
 
 import requests
 import json
+import datetime
+from math import cos, asin, sqrt
 
 class AqiStatus:
 
