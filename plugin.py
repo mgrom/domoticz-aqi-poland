@@ -27,16 +27,15 @@ sys.path.append(sys.prefix+'/local/lib/python3/dist-packages')
 import requests
 import json
 
-def distance(lat1, lon1, lat2, lon2):
-    p = 0.017453292519943295
-    a = 0.5 - cos((float(lat2)-float(lat1))*p)/2 + cos(float(lat1)*p)*cos(float(lat2)*p) * (1-cos((float(lon2)-float(lon1))*p)) / 2
-    return 12742 * asin(sqrt(a))
-
-def closest(data, v):
-    return min(data, key=lambda p: distance(v.get('gegrLat'),v.get('gegrLon'),p.get('gegrLat'),p.get('gegrLon')))
-
-
 class AqiStatus:
+
+    def distance(self, lat1, lon1, lat2, lon2):
+        p = 0.017453292519943295
+        a = 0.5 - cos((float(lat2)-float(lat1))*p)/2 + cos(float(lat1)*p)*cos(float(lat2)*p) * (1-cos((float(lon2)-float(lon1))*p)) / 2
+        return 12742 * asin(sqrt(a))
+
+    def closest(self, data, v):
+        return min(data, key=lambda p: self.distance(v.get('gegrLat'),v.get('gegrLon'),p.get('gegrLat'),p.get('gegrLon')))
 
     def getApiData(self, url):
         response = requests.get(url)
@@ -82,7 +81,7 @@ class AqiStatus:
         locationDict["gegrLon"] = location[1]
 
         stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
-        return closest(stations, locationDict)
+        return self.closest(stations, locationDict)
 
 class BasePlugin:   
 
@@ -112,8 +111,6 @@ class BasePlugin:
         if len(Devices) == 0:
             for key, value in self.aqi.sensors.items():
                 Domoticz.Device(Name=self.aqi.location+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
-            # Domoticz.Device(Name="External PM 2.5", TypeName="Custom", Unit=self.PM25, Used=0, Image=7).Create()
-            # Domoticz.Device(Name="External PM 10", TypeName="Custom", Unit=self.PM10, Used=1, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -144,23 +141,12 @@ class BasePlugin:
         return True
 
     def doUpdate(self):
-        # aqi = AqiStatus()
-        # Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
-
         for key, value in self.aqi.sensors.items():
             Devices[str(value.get("unit"))].Update(
                 sValue=str(value.get("value")),
                 nValue=0
             )
 
-        # Devices[self.PM10].Update(
-        #     sValue=str(aqi.pm10.get("value")),
-        #     nValue=0
-        # )
-        # Devices[self.PM25].Update(
-        #     sValue=str(aqi.pm25.get("value")),
-        #     nValue=0
-        # )
 
 global _plugin
 _plugin = BasePlugin()
