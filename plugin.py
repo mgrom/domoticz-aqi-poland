@@ -76,9 +76,9 @@ class AqiStatus:
 
     def __init__(self):
         self.location = self.getLocation()
-        self.name = self.location.stationName
-        self.address = self.location.addressStreet
-        self.stationId = self.location.id
+        self.name = self.location.get("stationName")
+        self.address = self.location.get("addressStreet")
+        self.stationId = self.location.get("id")
         self.sensors = self.getSensors()
 
 
