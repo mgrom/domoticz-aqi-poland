@@ -57,6 +57,11 @@ class BasePlugin:
 
         return
 
+    def getLocation(self):
+        location = str(Settings.get("Location")).split(";")
+        self.latitude = location[0]
+        self.longitude = location[1]
+
     def postponeNextPool(self, seconds=3600):
         self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=seconds))
         return self.nextpoll
