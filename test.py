@@ -76,7 +76,7 @@ global aqi
 aqi = AqiStatus()
 
 pprint.PrettyPrinter(indent=4).pprint(aqi.location)
-
+print(str(aqi.location))
 for key, value in aqi.sensors.items():
     print(str(value.get("unit")))
     print(value.get("value"))

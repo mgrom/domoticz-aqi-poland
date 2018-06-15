@@ -42,9 +42,6 @@ class AqiStatus:
         return response.json()
 
     def getValue(self, param):
-        # url = "http://api.gios.gov.pl/pjp-api/rest/data/getData/" + param
-        # response = requests.get(url)
-
         values = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/data/getData/"+param).get("values")
 
         for status in values:
@@ -53,9 +50,9 @@ class AqiStatus:
 
     def __init__(self):
         self.location = self.getLocation()
-        self.name = self.location.get("stationName")
-        self.address = self.location.get("addressStreet")
-        self.stationId = self.location.get("id")
+        self.name = self.location.stationName
+        self.address = self.location.addressStreet
+        self.stationId = self.location.id
         self.sensors = self.getSensors()
 
     def getSensors(self):
@@ -110,7 +107,8 @@ class BasePlugin:
 
         if len(Devices) == 0:
             for key, value in self.aqi.sensors.items():
-                Domoticz.Device(Name=self.aqi.location.stationName+" "+self.aqi.location.addressStreet+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
+                Domoticz.Debug(key+": "+value)
+                Domoticz.Device(Name=self.aqi.name+" "+self.aqi.address+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 
