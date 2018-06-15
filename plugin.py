@@ -109,10 +109,10 @@ class BasePlugin:
 
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
-        # if len(Devices) == 0:
-        #     for key, value in self.aqi.sensors.items():
-        #         Domoticz.Debug(key+": "+value)
-        #         Domoticz.Device(Name=self.aqi.name+" "+self.aqi.address+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
+        if len(Devices) == 0:
+            for key, value in aqi.sensors.items():
+                Domoticz.Debug(key+": "+value)
+                Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+key, TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -146,11 +146,12 @@ class BasePlugin:
         return AqiStatus()
 
     def doUpdate(self):
-        # for key, value in self.aqi.sensors.items():
-        #     Devices[str(value.get("unit"))].Update(
-        #         sValue=str(value.get("value")),
-        #         nValue=0
-        #     )
+        aqi = self.getAqiStatus()
+        for key, value in aqi.sensors.items():
+            Devices[str(value.get("unit"))].Update(
+                sValue=str(value.get("value")),
+                nValue=0
+            )
         return
 
 global _plugin
