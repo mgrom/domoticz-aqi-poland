@@ -78,7 +78,7 @@ class BasePlugin:
         stations = response.json()
         #lati 49-55
         #long 14-24
-        return self.closest(locationDict, stations)
+        return closest(locationDict, stations)
 
 
     def postponeNextPool(self, seconds=3600):
