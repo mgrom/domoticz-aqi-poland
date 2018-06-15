@@ -109,12 +109,12 @@ class BasePlugin:
         Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
 
         Devices[self.PM10].Update(
-            sValue=str(aqi.pm10.get("date")),
-            nValue=int(round(aqi.pm10.get("value")))
+            sValue=str(aqi.pm10.get("value")),
+            nValue=0
         )
         Devices[self.PM25].Update(
-            sValue=str(aqi.pm25.get("date")),
-            nValue=int(round(aqi.pm25.get("value")))
+            sValue=str(aqi.pm25.get("value")),
+            nValue=0
         )
 
 global _plugin
