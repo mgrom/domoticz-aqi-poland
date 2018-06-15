@@ -21,6 +21,7 @@
 import Domoticz
 import sys
 import datetime
+from math import cos, asin, sqrt
 
 sys.path.append(sys.prefix+'/local/lib/python3.5/dist-packages')
 sys.path.append(sys.prefix+'/local/lib/python3/dist-packages')
@@ -57,10 +58,26 @@ class BasePlugin:
 
         return
 
+    def distance(lat1, lon1, lat2, lon2):
+        p = 0.017453292519943295
+        a = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
+        return 12742 * asin(sqrt(a))
+
+    def closest(data, v):
+        return min(data, key=lambda p: distance(v['gegrLat'],v['gegrLon'],p['gegrLat'],p['gegrLon']))
+
     def getLocation(self):
         location = str(Settings.get("Location")).split(";")
-        self.latitude = location[0]
-        self.longitude = location[1]
+        locationDict["gegrLat"] = location[0]
+        locationDict["gegrLon"] = location[1]
+
+        url = "http://api.gios.gov.pl/pjp-api/rest/station/findAll"
+        response = requests.get(url)
+        stations = response.json()
+        #lati 49-55
+        #long 14-24
+        return self.closest(locationDict, stations)
+
 
     def postponeNextPool(self, seconds=3600):
         self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=seconds))
@@ -68,7 +85,7 @@ class BasePlugin:
 
 
     def onStart(self):
-        Domoticz.Debug()
+        Domoticz.Log(str(self.getLocation()))
         if Parameters["Mode6"] == 'Debug':
             self.debug = True
         else:
