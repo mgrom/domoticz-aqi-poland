@@ -142,7 +142,7 @@ class BasePlugin:
         
         return True
 
-    def getAqiStatus():
+    def getAqiStatus(self):
         return AqiStatus()
 
     def doUpdate(self):
