@@ -6,8 +6,6 @@
 """
 <plugin key="AQIgovpl" name="AQI.gov.pl" author="mgrom" version="0.1" wikilink="http://api.gios.gov.pl" externallink="https://github.com/mgrom/Aqi.gov.pl">
     <params>
-		<param field="Mode1" label="PM2.5 Sensor" width="200px" required="true" default="0"/>
-		<param field="Mode2" label="PM10 Sensor" default="0" width="200px" required="true"  />
         <param field="Mode3" label="Check every x minutes" width="40px" default="15" required="true" />
 		<param field="Mode6" label="Debug" width="75px">
 			<options>
@@ -20,66 +18,83 @@
 """
 import Domoticz
 import sys
-import datetime
-from math import cos, asin, sqrt
+
 
 sys.path.append(sys.prefix+'/local/lib/python3.5/dist-packages')
 sys.path.append(sys.prefix+'/local/lib/python3/dist-packages')
 
 import requests
 import json
-
-def distance(lat1, lon1, lat2, lon2):
-    p = 0.017453292519943295
-    a = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
-    return 12742 * asin(sqrt(a))
-
-def closest(data, v):
-    return min(data, key=lambda p: distance(v['gegrLat'],v['gegrLon'],p['gegrLat'],p['gegrLon']))
-
+import datetime
+from math import cos, asin, sqrt
 
 class AqiStatus:
 
-    def getValue(self, param):
-        url = "http://api.gios.gov.pl/pjp-api/rest/data/getData/" + param
-        response = requests.get(url)
+    def distance(self, lat1, lon1, lat2, lon2):
+        p = 0.017453292519943295
+        a = 0.5 - cos((float(lat2)-float(lat1))*p)/2 + cos(float(lat1)*p)*cos(float(lat2)*p) * (1-cos((float(lon2)-float(lon1))*p)) / 2
+        return 12742 * asin(sqrt(a))
 
-        values = response.json().get("values")
+    def closest(self, data, v):
+        return min(data, key=lambda p: self.distance(v.get('gegrLat'),v.get('gegrLon'),p.get('gegrLat'),p.get('gegrLon')))
+
+    def getApiData(self, url):
+        response = requests.get(url)
+        return response.json()
+
+    def getValue(self, param):
+        values = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/data/getData/"+param).get("values")
 
         for status in values:
             if status.get("value") != None:
                 return status
 
-    def __init__(self, pm25Sensor, pm10Sensor):
-        self.pm25 = self.getValue(pm25Sensor)
-        self.pm10 = self.getValue(pm10Sensor)
-
-
-class BasePlugin:
-
-    def __init__(self):
-        self.nextpoll = datetime.datetime.now()
-        self.inProgress = False
-
-        self.PM25 = 10
-        self.PM10 = 20
-
-        return
+    def getSensors(self):
+        Domoticz.Debug("getSensors")
+        sensors = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/sensors/" + str(self.stationId))
+        retSensors = {}
+        unit = 0
+        for sensor in sensors:
+            unit = unit + 10
+            retSensors[sensor.get("param").get("paramCode")] = {
+                "paramName": sensor.get("param").get("paramName"), 
+                "id": sensor.get("id"), 
+                "paramCode": sensor.get("param").get("paramCode"),
+                "value": self.getValue(str(sensor.get("id"))),
+                "unit": unit
+            }
+        Domoticz.Debug("getSensors: "+str(retSensors))
+        return retSensors
 
 
     def getLocation(self):
+        Domoticz.Debug('getLocation')
         location = str(Settings.get("Location")).split(";")
         locationDict = {}
         locationDict["gegrLat"] = location[0]
         locationDict["gegrLon"] = location[1]
 
-        url = "http://api.gios.gov.pl/pjp-api/rest/station/findAll"
-        response = requests.get(url)
-        stations = response.json()
-        #lati 49-55
-        #long 14-24
-        return self.closest(locationDict, stations)
+        stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
+        return self.closest(stations, locationDict)
 
+    def __init__(self):
+        self.location = self.getLocation()
+        self.name = self.location.get("stationName")
+        self.address = self.location.get("addressStreet")
+        self.stationId = self.location.get("id")
+        self.sensors = self.getSensors()
+
+
+
+class BasePlugin:   
+
+    def __init__(self):
+        self.nextpoll = datetime.datetime.now()
+        self.inProgress = False
+
+        # self.aqi = AqiStatus()
+
+        return
 
     def postponeNextPool(self, seconds=3600):
         self.nextpoll = (datetime.datetime.now() + datetime.timedelta(seconds=seconds))
@@ -87,7 +102,8 @@ class BasePlugin:
 
 
     def onStart(self):
-        Domoticz.Log(str(self.getLocation()))
+        aqi = self.getAqiStatus()
+        Domoticz.Debug("aqi.location: "+str(aqi.location))
         if Parameters["Mode6"] == 'Debug':
             self.debug = True
         else:
@@ -97,8 +113,9 @@ class BasePlugin:
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
         if len(Devices) == 0:
-            Domoticz.Device(Name="External PM 2.5", TypeName="Custom", Unit=self.PM25, Used=1, Image=7).Create()
-            Domoticz.Device(Name="External PM 10", TypeName="Custom", Unit=self.PM10, Used=1, Image=7).Create()
+            for key, value in aqi.sensors.items():
+                Domoticz.Debug(str(key)+": "+str(value))
+                Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=7).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -128,18 +145,20 @@ class BasePlugin:
         
         return True
 
-    def doUpdate(self):
-        aqi = AqiStatus(Parameters["Mode1"], Parameters["Mode2"])
-        Domoticz.Debug("PM 2.5: " + str(round(aqi.pm10.get("value"))))
+    def getAqiStatus(self):
+        return AqiStatus()
 
-        Devices[self.PM10].Update(
-            sValue=str(aqi.pm10.get("value")),
-            nValue=0
-        )
-        Devices[self.PM25].Update(
-            sValue=str(aqi.pm25.get("value")),
-            nValue=0
-        )
+    def doUpdate(self):
+        aqi = self.getAqiStatus()
+        Domoticz.Debug("doUpdate in progress")
+        for key, value in aqi.sensors.items():
+            Domoticz.Debug(str(key)+": "+str(value.get("value").get("value")))
+            Devices[int(value.get("unit"))].Update(
+                sValue=str(round(value.get("value").get("value"))),
+                nValue=round(value.get("value").get("value"))
+            )
+        Domoticz.Debug("doUpdate finished")
+        return
 
 global _plugin
 _plugin = BasePlugin()
