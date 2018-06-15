@@ -68,6 +68,7 @@ class BasePlugin:
 
     def getLocation(self):
         location = str(Settings.get("Location")).split(";")
+        locationDict = {}
         locationDict["gegrLat"] = location[0]
         locationDict["gegrLon"] = location[1]
 
