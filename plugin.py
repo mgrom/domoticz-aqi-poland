@@ -152,7 +152,7 @@ class BasePlugin:
         aqi = self.getAqiStatus()
         Domoticz.Debug("doUpdate in progress")
         for key, value in aqi.sensors.items():
-            Domoticz.Debug(str(key)+": "+str(value))
+            Domoticz.Debug(str(key)+": "+str(value.get("value")))
             Devices[str(value.get("unit"))].Update(
                 sValue=str(value.get("value").get("value")),
                 nValue=0
