@@ -121,7 +121,7 @@ class BasePlugin:
             self.debug = False
         Domoticz.Debugging(self.debug)
 
-        
+        self.pollinterval = int(Parameters["Mode3"]) * 60
 
         if len(Devices) == 0 and aqi.location.get("error") == False:
             for key, value in aqi.sensors.items():
