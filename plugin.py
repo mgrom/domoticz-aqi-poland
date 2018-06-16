@@ -99,7 +99,7 @@ class BasePlugin:
     def __init__(self):
         self.nextpoll = datetime.datetime.now()
         self.inProgress = False
-        self.pollinterval = int(Parameters["Mode3"]) * 60
+        # self.pollinterval = int(Parameters["Mode3"]) * 60
         # self.aqi = AqiStatus()
 
         return
