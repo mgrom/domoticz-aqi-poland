@@ -82,7 +82,10 @@ class AqiStatus:
         locationDict["gegrLon"] = location[1]
 
         stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
-        return self.closest(stations, locationDict)
+        if stations.get("error") == True:
+            return stations
+        else:
+            return self.closest(stations, locationDict)
 
     def __init__(self):
         self.location = self.getLocation()
