@@ -26,7 +26,7 @@ Restart Domoticz
 
 ## Update
 ```
-cd YOUR_DOMOTICZ_PATH/plugins/domoticz-AirPurifier
+cd YOUR_DOMOTICZ_PATH/plugins/domoticz-aqi-poland
 git pull
 ```
 * Restart Domoticz
