@@ -171,7 +171,7 @@ class BasePlugin:
                 )
             Domoticz.Debug("doUpdate finished")
         else:
-            Domoticz.Debug("No update - api unavailable")
+            Domoticz.Log("No update - api unavailable")
         return
 
 global _plugin
