@@ -40,6 +40,13 @@ class AqiStatus:
 
     def getApiData(self, url):
         response = requests.get(url)
+        try:
+            if response.status_code == 503:
+                response.raise_for_status()
+        except requests.exceptions.HTTPError as e: 
+            if e.response.status_code == 503:
+                Domoticz.Debug("Api unavailable")
+                return {"error": True}                
         return response.json()
 
     def getValue(self, param):
@@ -79,10 +86,11 @@ class AqiStatus:
 
     def __init__(self):
         self.location = self.getLocation()
-        self.name = self.location.get("stationName")
-        self.address = self.location.get("addressStreet")
-        self.stationId = self.location.get("id")
-        self.sensors = self.getSensors()
+        if(self.location.get("error") == False):
+            self.name = self.location.get("stationName")
+            self.address = self.location.get("addressStreet")
+            self.stationId = self.location.get("id")
+            self.sensors = self.getSensors()
 
 
 
@@ -91,7 +99,7 @@ class BasePlugin:
     def __init__(self):
         self.nextpoll = datetime.datetime.now()
         self.inProgress = False
-
+        self.pollinterval = int(Parameters["Mode3"]) * 60
         # self.aqi = AqiStatus()
 
         return
@@ -110,9 +118,9 @@ class BasePlugin:
             self.debug = False
         Domoticz.Debugging(self.debug)
 
-        self.pollinterval = int(Parameters["Mode3"]) * 60
+        
 
-        if len(Devices) == 0:
+        if len(Devices) == 0 and aqi.location.get("error") == False:
             for key, value in aqi.sensors.items():
                 Domoticz.Debug(str(key)+": "+str(value))
                 Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=19).Create()
@@ -150,14 +158,17 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = self.getAqiStatus()
-        Domoticz.Debug("doUpdate in progress")
-        for key, value in aqi.sensors.items():
-            Domoticz.Debug(str(key)+": "+str(value.get("value").get("value")))
-            Devices[int(value.get("unit"))].Update(
-                sValue=str(round(value.get("value").get("value"))),
-                nValue=round(value.get("value").get("value"))
-            )
-        Domoticz.Debug("doUpdate finished")
+        if aqi.location.get("error") == False:
+            Domoticz.Debug("doUpdate in progress")
+            for key, value in aqi.sensors.items():
+                Domoticz.Debug(str(key)+": "+str(value.get("value").get("value")))
+                Devices[int(value.get("unit"))].Update(
+                    sValue=str(round(value.get("value").get("value"))),
+                    nValue=round(value.get("value").get("value"))
+                )
+            Domoticz.Debug("doUpdate finished")
+        else:
+            Domoticz.Debug("No update - api unavailable")
         return
 
 global _plugin
