@@ -181,7 +181,8 @@ class BasePlugin:
     def onHeartbeat(self, fetch=False):
         Domoticz.Log('onHeartbeat called')
         now = datetime.datetime.now()
-
+        self.pollinterval = int(Parameters["Mode3"]) * 60
+        
         if not fetch:
             if self.inProgress or (now < self.nextpoll):
                 Domoticz.Log('skip processing')
