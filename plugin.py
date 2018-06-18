@@ -114,6 +114,7 @@ class BasePlugin:
 
 
     def onStart(self):
+        Domoticz.Debug('onStart called')
         aqi = self.getAqiStatus()
         Domoticz.Debug("aqi.location: "+str(aqi.location))
         if Parameters["Mode6"] == 'Debug':
@@ -132,8 +133,25 @@ class BasePlugin:
         self.onHeartbeat(fetch=False)
 
     def onStop(self):
-        Domoticz.Debug('onStop called')
+        Domoticz.Log("onStop called")
         Domoticz.Debugging(0)
+
+    def onConnect(self, Status, Description):
+        Domoticz.Log("onConnect called")
+
+    def onMessage(self, Data, Status, Extra):
+        Domoticz.Log("onMessage called")
+
+    def onCommand(self, Unit, Command, Level, Hue):
+        Domoticz.Log(
+            "onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
+
+    def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
+        Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(
+            Priority) + "," + Sound + "," + ImageFile)
+
+    def onDisconnect(self):
+        Domoticz.Log("onDisconnect called")
 
     def onHeartbeat(self, fetch=False):
         Domoticz.Debug('onHeartbeat called')
@@ -186,6 +204,26 @@ def onStart():
 def onStop():
     global _plugin
     _plugin.onStop()
+
+def onConnect(Status, Description):
+    global _plugin
+    _plugin.onConnect(Status, Description)
+
+def onMessage(Data, Status, Extra):
+    global _plugin
+    _plugin.onMessage(Data, Status, Extra)
+
+def onCommand(Unit, Command, Level, Hue):
+    global _plugin
+    _plugin.onCommand(Unit, Command, Level, Hue)
+
+def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
+    global _plugin
+    _plugin.onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile)
+
+def onDisconnect():
+    global _plugin
+    _plugin.onDisconnect()
 
 def onHeartbeat():
     global _plugin
