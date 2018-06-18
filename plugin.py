@@ -118,7 +118,7 @@ class AqiStatus:
     def __init__(self):
         print('aqi init')
         self.location = self.getLocation()
-        if self.location.get("error") == False:
+        if self.location.get("error") == False or self.location.get("error") == None:
             self.name = self.location.get("stationName")
             self.address = self.location.get("addressStreet")
             self.stationId = self.location.get("id")
@@ -214,8 +214,7 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = self.getAqiStatus()
-        Domoticz.Log("api.location.get(error): "+aqi.location.get("error"))
-        if aqi.location.get("error") == False:
+        if aqi.location.get("error") == False or aqi.location.get("error") == None:
             Domoticz.Log("doUpdate in progress")
             for key, value in aqi.sensors.items():
                 Domoticz.Log(str(key)+": "+str(value.get("value").get("value")))
