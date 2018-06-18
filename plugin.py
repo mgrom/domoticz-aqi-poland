@@ -58,7 +58,7 @@ class AqiStatus:
             if e.response.status_code == 503:
                 Domoticz.Log("Api unavailable")
                 error = {
-                    "error": "1",
+                    "error": True,
                     "code": '{}'.format(e.response.status_code),
                     "message": '{}'.format(e.response.reason)
                 }
@@ -67,7 +67,7 @@ class AqiStatus:
                 # Domoticz.Log("getApiData: " + str(response.json()))
             #     Domoticz.Log("get apidata: else")
                 return {
-                    "error": "1",
+                    "error": True,
                     "message": '{}'.format(response.ok)
                 }
         # Domoticz.Log("getApiData: " + str(response.json()))
@@ -118,7 +118,7 @@ class AqiStatus:
     def __init__(self):
         print('aqi init')
         self.location = self.getLocation()
-        if(self.location.get("error") == False):
+        if self.location.get("error") == False):
             self.name = self.location.get("stationName")
             self.address = self.location.get("addressStreet")
             self.stationId = self.location.get("id")
