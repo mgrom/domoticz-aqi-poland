@@ -54,7 +54,7 @@ class AqiStatus:
                 Domoticz.Log("error")
                 response.raise_for_status()
             else:
-                Domoticz.Log("getApiData "+response.status_code)
+                Domoticz.Log("getApiData {}".format(response.status_code))
         except requests.exceptions.HTTPError as e: 
             if e.response.status_code == 503:
                 Domoticz.Log("Api unavailable")
