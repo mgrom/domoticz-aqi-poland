@@ -46,7 +46,7 @@ class AqiStatus:
         return min(data, key=lambda p: self.distance(v.get('gegrLat'),v.get('gegrLon'),p.get('gegrLat'),p.get('gegrLon')))
 
     def getApiData(self, url):
-        Domoticz.Log("getapidata")
+        Domoticz.Log("getapidata: "+url)
         response = requests.get(url)
         try:
             if not response.ok:
