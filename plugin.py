@@ -37,7 +37,6 @@ from math import cos, asin, sqrt
 class AqiStatus:
 
     def distance(self, lat1, lon1, lat2, lon2):
-        Domoticz.Log("Distance")
         p = 0.017453292519943295
         a = 0.5 - cos((float(lat2)-float(lat1))*p)/2 + cos(float(lat1)*p)*cos(float(lat2)*p) * (1-cos((float(lon2)-float(lon1))*p)) / 2
         return 12742 * asin(sqrt(a))
