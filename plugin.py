@@ -69,7 +69,7 @@ class AqiStatus:
             #     Domoticz.Log("get apidata: else")
                 return {
                     "error": "1",
-                    "message": response.ok
+                    "message": str(response.ok)
                 }
         # Domoticz.Log("getApiData: " + str(response.json()))
         return response.json()
