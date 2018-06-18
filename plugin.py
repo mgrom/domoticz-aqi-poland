@@ -51,6 +51,7 @@ class AqiStatus:
         response = requests.get(url)
         try:
             if response.status_code == 503:
+                Domoticz.Log("503")
                 response.raise_for_status()
             else:
                 Domoticz.Log("getApiData "+response.status_code)
@@ -58,12 +59,12 @@ class AqiStatus:
             if e.response.status_code == 503:
                 Domoticz.Log("Api unavailable")
                 return {"error": True}        
-            else:
-                Domoticz.Log("get apidata: else")
-                return {
-                    "error": True,
-                    "message": response.status_code
-                }
+            # else:
+            #     Domoticz.Log("get apidata: else")
+            #     return {
+            #         "error": True,
+            #         "message": response.status_code
+            #     }
         Domoticz.Log("getApiData: " + response.json())
         return response.json()
 
@@ -108,7 +109,7 @@ class AqiStatus:
             return self.closest(stations, locationDict)
 
     def __init__(self):
-        Domoticz.Log('aqi init')
+        print('aqi init')
         self.location = self.getLocation()
         if(self.location.get("error") == False):
             self.name = self.location.get("stationName")
@@ -121,7 +122,7 @@ class AqiStatus:
 class BasePlugin:   
 
     def __init__(self):
-        Domoticz.Log('plugin init')
+        print('plugin init')
         self.nextpoll = datetime.datetime.now()
         self.inProgress = False
         # Domoticz.Debug(sys.version)
