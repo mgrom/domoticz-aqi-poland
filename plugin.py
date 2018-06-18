@@ -59,7 +59,7 @@ class AqiStatus:
             if e.response.status_code == 503:
                 Domoticz.Log("Api unavailable")
                 error = {
-                    "error": True,
+                    "error": "1",
                     "code": str(e.response.status_code),
                     "message": e.response.reason
                 }
@@ -68,7 +68,7 @@ class AqiStatus:
                 # Domoticz.Log("getApiData: " + str(response.json()))
             #     Domoticz.Log("get apidata: else")
                 return {
-                    "error": True,
+                    "error": "1",
                     "message": response.ok
                 }
         # Domoticz.Log("getApiData: " + str(response.json()))
