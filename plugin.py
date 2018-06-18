@@ -155,7 +155,7 @@ class BasePlugin:
 
         self.pollinterval = int(Parameters["Mode3"]) * 60
 
-        if len(Devices) == 0 and aqi.location.get("error") == False:
+        if len(Devices) == 0 and not isinstance(aqi.location, dict):
             for key, value in aqi.sensors.items():
                 Domoticz.Log(str(key)+": "+str(value))
                 Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=19).Create()
