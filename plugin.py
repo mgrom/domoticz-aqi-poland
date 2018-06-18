@@ -18,10 +18,16 @@
 """
 import Domoticz
 import sys
+import os
+
+if os.name == 'nt':
+    sys.path.append(sys.prefix+"\\lib\\site-packages")
+    print(sys.prefix+"\\lib\\site-packages")
+else:
+    sys.path.append(sys.prefix+'/local/lib/python3.5/dist-packages')
+    sys.path.append(sys.prefix+'/local/lib/python3/dist-packages')
 
 
-sys.path.append(sys.prefix+'/local/lib/python3.5/dist-packages')
-sys.path.append(sys.prefix+'/local/lib/python3/dist-packages')
 
 import requests
 import json
@@ -31,26 +37,38 @@ from math import cos, asin, sqrt
 class AqiStatus:
 
     def distance(self, lat1, lon1, lat2, lon2):
+        Domoticz.Log("Distance")
         p = 0.017453292519943295
         a = 0.5 - cos((float(lat2)-float(lat1))*p)/2 + cos(float(lat1)*p)*cos(float(lat2)*p) * (1-cos((float(lon2)-float(lon1))*p)) / 2
         return 12742 * asin(sqrt(a))
 
     def closest(self, data, v):
+        Domoticz.Log("closest")
         return min(data, key=lambda p: self.distance(v.get('gegrLat'),v.get('gegrLon'),p.get('gegrLat'),p.get('gegrLon')))
 
     def getApiData(self, url):
+        Domoticz.Log("getapidata")
         response = requests.get(url)
         try:
             if response.status_code == 503:
                 response.raise_for_status()
+            else:
+                Domoticz.Log("getApiData "+response.status_code)
         except requests.exceptions.HTTPError as e: 
             if e.response.status_code == 503:
-                Domoticz.Debug("Api unavailable")
+                Domoticz.Log("Api unavailable")
                 return {"error": True}        
-            else return {"error": True, e}        
+            else:
+                Domoticz.Log("get apidata: else")
+                return {
+                    "error": True,
+                    "message": e.response.status_code,
+                }
+        Domoticz.Log("getApiData: " + response.json())
         return response.json()
 
     def getValue(self, param):
+        Domoticz.Log("getvalues")
         values = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/data/getData/"+param).get("values")
 
         for status in values:
@@ -58,7 +76,7 @@ class AqiStatus:
                 return status
 
     def getSensors(self):
-        Domoticz.Debug("getSensors")
+        Domoticz.Log("getSensors")
         sensors = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/sensors/" + str(self.stationId))
         retSensors = {}
         unit = 0
@@ -71,17 +89,18 @@ class AqiStatus:
                 "value": self.getValue(str(sensor.get("id"))),
                 "unit": unit
             }
-        Domoticz.Debug("getSensors: "+str(retSensors))
+        Domoticz.Log("getSensors: "+str(retSensors))
         return retSensors
 
 
     def getLocation(self):
-        Domoticz.Debug('getLocation')
+        Domoticz.Log('getLocation')
         location = str(Settings.get("Location")).split(";")
         locationDict = {}
         locationDict["gegrLat"] = location[0]
         locationDict["gegrLon"] = location[1]
 
+        Domoticz.Log('before getApiData')
         stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
         if stations.get("error") == True:
             return stations
@@ -89,6 +108,7 @@ class AqiStatus:
             return self.closest(stations, locationDict)
 
     def __init__(self):
+        Domoticz.Log('aqi init')
         self.location = self.getLocation()
         if(self.location.get("error") == False):
             self.name = self.location.get("stationName")
@@ -101,8 +121,11 @@ class AqiStatus:
 class BasePlugin:   
 
     def __init__(self):
+        Domoticz.Log('plugin init')
         self.nextpoll = datetime.datetime.now()
         self.inProgress = False
+        # Domoticz.Debug(sys.version)
+        # Domoticz.Log(sys.version)
         # self.pollinterval = int(Parameters["Mode3"]) * 60
         # self.aqi = AqiStatus()
 
@@ -114,9 +137,10 @@ class BasePlugin:
 
 
     def onStart(self):
-        Domoticz.Debug('onStart called')
+        Domoticz.Log(sys.version)
+        Domoticz.Log('onStart')
         aqi = self.getAqiStatus()
-        Domoticz.Debug("aqi.location: "+str(aqi.location))
+        Domoticz.Log("aqi.location: "+str(aqi.location))
         if Parameters["Mode6"] == 'Debug':
             self.debug = True
         else:
@@ -127,13 +151,13 @@ class BasePlugin:
 
         if len(Devices) == 0 and aqi.location.get("error") == False:
             for key, value in aqi.sensors.items():
-                Domoticz.Debug(str(key)+": "+str(value))
+                Domoticz.Log(str(key)+": "+str(value))
                 Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=19).Create()
 
         self.onHeartbeat(fetch=False)
 
     def onStop(self):
-        Domoticz.Log("onStop called")
+        Domoticz.Log('onStop')
         Domoticz.Debugging(0)
 
     def onConnect(self, Status, Description):
@@ -154,18 +178,18 @@ class BasePlugin:
         Domoticz.Log("onDisconnect called")
 
     def onHeartbeat(self, fetch=False):
-        Domoticz.Debug('onHeartbeat called')
+        Domoticz.Log('onHeartbeat called')
         now = datetime.datetime.now()
 
         if not fetch:
             if self.inProgress or (now < self.nextpoll):
-                Domoticz.Debug('skip processing')
+                Domoticz.Log('skip processing')
                 return
         
         self.postponeNextPool(seconds=self.pollinterval)
 
         try:
-            Domoticz.Debug("onHeartbeat in progress")
+            Domoticz.Log("onHeartbeat in progress")
             self.inProgress = True
 
             self.doUpdate()
@@ -182,14 +206,14 @@ class BasePlugin:
     def doUpdate(self):
         aqi = self.getAqiStatus()
         if aqi.location.get("error") == False:
-            Domoticz.Debug("doUpdate in progress")
+            Domoticz.Log("doUpdate in progress")
             for key, value in aqi.sensors.items():
-                Domoticz.Debug(str(key)+": "+str(value.get("value").get("value")))
+                Domoticz.Log(str(key)+": "+str(value.get("value").get("value")))
                 Devices[int(value.get("unit"))].Update(
                     sValue=str(round(value.get("value").get("value"))),
                     nValue=round(value.get("value").get("value"))
                 )
-            Domoticz.Debug("doUpdate finished")
+            Domoticz.Log("doUpdate finished")
         else:
             Domoticz.Log("No update - api unavailable")
         return
@@ -229,3 +253,17 @@ def onHeartbeat():
     global _plugin
     _plugin.onHeartbeat()
 
+
+def DumpConfigToLog():
+    for x in Parameters:
+        if Parameters[x] != "":
+            Domoticz.Log( "'" + x + "':'" + str(Parameters[x]) + "'")
+    Domoticz.Log("Device count: " + str(len(Devices)))
+    for x in Devices:
+        Domoticz.Log("Device:           " + str(x) + " - " + str(Devices[x]))
+        Domoticz.Log("Device ID:       '" + str(Devices[x].ID) + "'")
+        Domoticz.Log("Device Name:     '" + Devices[x].Name + "'")
+        Domoticz.Log("Device nValue:    " + str(Devices[x].nValue))
+        Domoticz.Log("Device sValue:   '" + Devices[x].sValue + "'")
+        Domoticz.Log("Device LastLevel: " + str(Devices[x].LastLevel))
+    return
