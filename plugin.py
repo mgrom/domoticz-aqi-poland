@@ -214,6 +214,7 @@ class BasePlugin:
 
     def doUpdate(self):
         aqi = self.getAqiStatus()
+        Domoticz.Log("api.location.get(error): "+aqi.location.get("error"))
         if aqi.location.get("error") == False:
             Domoticz.Log("doUpdate in progress")
             for key, value in aqi.sensors.items():
