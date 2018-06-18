@@ -118,7 +118,7 @@ class AqiStatus:
     def __init__(self):
         print('aqi init')
         self.location = self.getLocation()
-        if self.location.get("error") == False):
+        if self.location.get("error") == False:
             self.name = self.location.get("stationName")
             self.address = self.location.get("addressStreet")
             self.stationId = self.location.get("id")
