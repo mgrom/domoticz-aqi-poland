@@ -58,7 +58,7 @@ class AqiStatus:
         except requests.exceptions.HTTPError as e: 
             if e.response.status_code == 503:
                 Domoticz.Log("Api unavailable")
-                return {"error": True}        
+                return {"error": "1"}
             # else:
             #     Domoticz.Log("get apidata: else")
             #     return {
@@ -182,7 +182,7 @@ class BasePlugin:
         Domoticz.Log('onHeartbeat called')
         now = datetime.datetime.now()
         self.pollinterval = int(Parameters["Mode3"]) * 60
-        
+
         if not fetch:
             if self.inProgress or (now < self.nextpoll):
                 Domoticz.Log('skip processing')
