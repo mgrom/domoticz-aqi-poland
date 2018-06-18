@@ -46,7 +46,8 @@ class AqiStatus:
         except requests.exceptions.HTTPError as e: 
             if e.response.status_code == 503:
                 Domoticz.Debug("Api unavailable")
-                return {"error": True}                
+                return {"error": True}        
+            else return {"error": True, e}        
         return response.json()
 
     def getValue(self, param):
@@ -135,6 +136,7 @@ class BasePlugin:
         Domoticz.Debugging(0)
 
     def onHeartbeat(self, fetch=False):
+        Domoticz.Debug('onHeartbeat called')
         now = datetime.datetime.now()
 
         if not fetch:
