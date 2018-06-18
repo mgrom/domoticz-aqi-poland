@@ -50,7 +50,7 @@ class AqiStatus:
         Domoticz.Log("getapidata")
         response = requests.get(url)
         try:
-            if not response.ok():
+            if not response.ok:
                 Domoticz.Log("error")
                 response.raise_for_status()
             else:
