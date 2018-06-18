@@ -60,13 +60,13 @@ class AqiStatus:
                 Domoticz.Log("Api unavailable")
                 return {"error": str(response.json())}
             else:
-                Domoticz.Log("getApiData: " + str(response.json()))
+                # Domoticz.Log("getApiData: " + str(response.json()))
             #     Domoticz.Log("get apidata: else")
-            #     return {
-            #         "error": True,
-            #         "message": response.status_code
-            #     }
-        Domoticz.Log("getApiData: " + str(response.json()))
+                return {
+                    "error": True,
+                    "message": response.status_code
+                }
+        # Domoticz.Log("getApiData: " + str(response.json()))
         return response.json()
 
     def getValue(self, param):
