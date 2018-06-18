@@ -50,21 +50,26 @@ class AqiStatus:
         Domoticz.Log("getapidata")
         response = requests.get(url)
         try:
-            if response.status_code == 503:
-                Domoticz.Log("503")
+            if not response.ok():
+                Domoticz.Log("error")
                 response.raise_for_status()
             else:
                 Domoticz.Log("getApiData "+response.status_code)
         except requests.exceptions.HTTPError as e: 
             if e.response.status_code == 503:
                 Domoticz.Log("Api unavailable")
-                return {"error": str(response.json())}
+                error = {
+                    "error": True,
+                    "code": str(e.response.status_code),
+                    "message": e.response.reason
+                }
+                return error
             else:
                 # Domoticz.Log("getApiData: " + str(response.json()))
             #     Domoticz.Log("get apidata: else")
                 return {
                     "error": True,
-                    "message": response.status_code
+                    "message": response.ok
                 }
         # Domoticz.Log("getApiData: " + str(response.json()))
         return response.json()
