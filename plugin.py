@@ -109,7 +109,7 @@ class AqiStatus:
 
         Domoticz.Log('before getApiData')
         stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
-        if stations.get("error") == True:
+        if isinstance(stations, dict):
             return stations
         else:
             return self.closest(stations, locationDict)
