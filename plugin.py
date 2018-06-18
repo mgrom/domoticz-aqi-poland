@@ -109,8 +109,10 @@ class AqiStatus:
         Domoticz.Log('before getApiData')
         stations = self.getApiData("http://api.gios.gov.pl/pjp-api/rest/station/findAll")
         if isinstance(stations, dict):
+            Domoticz.Log("return error")
             return stations
         else:
+            Domoticz.Log("return correct location")
             return self.closest(stations, locationDict)
 
     def __init__(self):
