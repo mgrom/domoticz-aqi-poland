@@ -48,6 +48,9 @@ class AqiStatus:
 
     def getApiData(self, url):
         Domoticz.Debug("getapidata: "+url)
+        Domoticz.Debug("sleep")
+        time.sleep(3)
+        Domoticz.Debug("sleep done")
         response = requests.get(url)
         try:
             if not response.ok:
@@ -89,7 +92,6 @@ class AqiStatus:
         unit = 0
         for sensor in sensors:
             unit = unit + 10
-            sleep(3)
             retSensors[sensor.get("param").get("paramCode")] = {
                 "paramName": sensor.get("param").get("paramName"), 
                 "id": sensor.get("id"), 
@@ -120,12 +122,10 @@ class AqiStatus:
     def __init__(self):
         print('aqi init')
         self.location = self.getLocation()
-        sleep(3)
+        
         if self.location.get("error") == False or self.location.get("error") == None:
             self.name = self.location.get("stationName")
-            sleep(3)
             self.address = self.location.get("addressStreet")
-            sleep(3)
             self.stationId = self.location.get("id")
             self.sensors = self.getSensors()
 
