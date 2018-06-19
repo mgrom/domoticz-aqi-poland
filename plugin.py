@@ -92,13 +92,16 @@ class AqiStatus:
         unit = 0
         for sensor in sensors:
             unit = unit + 10
-            retSensors[sensor.get("param").get("paramCode")] = {
-                "paramName": sensor.get("param").get("paramName"), 
-                "id": sensor.get("id"), 
-                "paramCode": sensor.get("param").get("paramCode"),
-                "value": self.getValue(str(sensor.get("id"))),
-                "unit": unit
-            }
+            try:
+                retSensors[sensor.get("param").get("paramCode")] = {
+                    "paramName": sensor.get("param").get("paramName"), 
+                    "id": sensor.get("id"), 
+                    "paramCode": sensor.get("param").get("paramCode"),
+                    "value": self.getValue(str(sensor.get("id"))),
+                    "unit": unit
+                }
+            except AttributeError:
+                Domoticz.Error(str(sensor))
         Domoticz.Debug("getSensors: "+str(retSensors))
         return retSensors
 
