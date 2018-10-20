@@ -26,11 +26,13 @@ Restart Domoticz
 
 ## Update
 ```
-cd YOUR_DOMOTICZ_PATH/plugins/domoticz-AirPurifier
+cd YOUR_DOMOTICZ_PATH/plugins/domoticz-aqi-poland
 git pull
 ```
 * Restart Domoticz
 
 ## Troubleshooting
+
+Sometimes API is unavailable, so then devices are not going to be updated.
 
 In case of issues, mostly plugin not visible on plugin list, check logs if plugin system is working correctly. See Domoticz wiki for resolution of most typical installation issues http://www.domoticz.com/wiki/Linux#Problems_locating_Python
