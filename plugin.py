@@ -169,9 +169,23 @@ class BasePlugin:
 
         if len(Devices) == 0 and (aqi.location.get("error") == False or aqi.location.get("error") == None):
             Domoticz.Debug("create devices")
+            unit=0
+            if str(key) == "PM2.5":
+                unit=25
+            elif str(key) == "PM10":
+                unit=10
+            elif str(key) == "NO2":
+                unit=2
+            elif str(key) == "SO2":
+                unit=52
+            elif str(key) == "O3":
+                unit=3
+            else:
+                unit=100
+                
             for key, value in aqi.sensors.items():
                 Domoticz.Debug(str(key)+": "+str(value))
-                Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("id")), Used=0, Image=19).Create()
+                Domoticz.Device(Name=aqi.address+" "+str(key), TypeName="Custom", Unit=unit, Used=0, Image=19).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -229,7 +243,20 @@ class BasePlugin:
             Domoticz.Debug("doUpdate in progress")
             for key, value in aqi.sensors.items():
                 Domoticz.Debug(str(key)+": "+str(value.get("value").get("value")))
-                Devices[int(value.get("id"))].Update(
+                unit=0
+                if str(key) == "PM2.5":
+                    unit=25
+                elif str(key) == "PM10":
+                    unit=10
+                elif str(key) == "NO2":
+                    unit=2
+                elif str(key) == "SO2":
+                    unit=52
+                elif str(key) == "O3":
+                    unit=3
+                else:
+                    unit=100                    
+                Devices[unit].Update(
                     sValue=str(round(value.get("value").get("value"))),
                     nValue=round(value.get("value").get("value"))
                 )
