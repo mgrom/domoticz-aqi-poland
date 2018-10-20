@@ -126,7 +126,7 @@ class BasePlugin:
         if len(Devices) == 0 and aqi.location.get("error") == False:
             for key, value in aqi.sensors.items():
                 Domoticz.Debug(str(key)+": "+str(value))
-                Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("unit")), Used=0, Image=19).Create()
+                Domoticz.Device(Name=aqi.name+" "+aqi.address+" "+str(key), TypeName="Custom", Unit=int(value.get("id")), Used=0, Image=19).Create()
 
         self.onHeartbeat(fetch=False)
 
@@ -165,7 +165,7 @@ class BasePlugin:
             Domoticz.Debug("doUpdate in progress")
             for key, value in aqi.sensors.items():
                 Domoticz.Debug(str(key)+": "+str(value.get("value").get("value")))
-                Devices[int(value.get("unit"))].Update(
+                Devices[int(value.get("id"))].Update(
                     sValue=str(round(value.get("value").get("value"))),
                     nValue=round(value.get("value").get("value"))
                 )
